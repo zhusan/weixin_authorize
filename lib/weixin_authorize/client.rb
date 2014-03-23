@@ -79,9 +79,9 @@ module WeixinAuthorize
         JSON.parse(RestClient.get(get_api_url, :params => options))
       end
 
-      def http_get(url, options={})
+      def http_get(url, options={}, endpoint="plain")
         options = options.merge(access_token_param)
-        http_get_without_token(url, options)
+        http_get_without_token(url, options, endpoint)
       end
 
       # Refactor
@@ -89,6 +89,9 @@ module WeixinAuthorize
         post_api_url = endpoint_url(endpoint) + url + "?access_token=#{get_access_token}"
         options      = MultiJson.dump(options) # to json
         JSON.parse(RestClient.post(post_api_url, options))
+      end
+
+      def http_upload_media(url, options, endpoint="file")
       end
 
       def endpoint_url(endpoint)
