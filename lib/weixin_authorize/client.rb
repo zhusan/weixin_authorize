@@ -8,6 +8,7 @@ module WeixinAuthorize
     include Api::Menu
     include Api::Custom
     include Api::Groups
+    include Api::Media
 
     attr_accessor :app_id, :app_secret, :expired_at # Time.now + expires_in
     attr_accessor :access_token, :redis_key
@@ -86,12 +87,24 @@ module WeixinAuthorize
 
       # Refactor
       def http_post(url, options={}, endpoint="plain")
-        post_api_url = endpoint_url(endpoint) + url + "?access_token=#{get_access_token}"
+        post_api_url = endpoint_url(endpoint) + url
+        post_api_url += "?access_token=#{get_access_token}"
         options      = MultiJson.dump(options) # to json
         JSON.parse(RestClient.post(post_api_url, options))
       end
 
-      def http_upload_media(url, options, endpoint="file")
+      def http_upload(url, options)
+        media_type = options.delete(:media_type)
+        upload_url = file_endpoint + url
+        upload_url += "?access_token=#{get_access_token}"
+        upload_url += "&type=#{media_type}"
+        JSON.parse(RestClient.post(upload_url, options))
+      end
+
+      def http_download(url, options={})
+        options = options.merge(access_token_param)
+        download_url = file_endpoint + url
+        RestClient.get(download_url, :params => options)
       end
 
       def endpoint_url(endpoint)
